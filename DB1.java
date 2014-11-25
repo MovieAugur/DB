@@ -2,6 +2,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.File;
 import java.sql.*;
 
 public class DBdemo  {
@@ -13,23 +14,8 @@ public class DBdemo  {
    static final String USER = "bill";
    static final String PASS = "passpass";
    
-   public class movie_data
-   {
-	   String movie_name;
-	   int twitter_score;
-	   int RT_audience_cmt;
-	   int RT_critic_cmt;
-	   int RT_audience_score;
-	   int RT_critic_score;
-	   int YT_cmt_score;
-	   int YT_views;
-	   int YT_likes;
-	   int YT_dislikes;
-	   long collections;
-   }
    
-   
-   public void create_table()
+   public static void create_table()
    {
 	   Connection conn = null;
 	   Statement stmt = null;
@@ -41,8 +27,8 @@ public class DBdemo  {
 		   System.out.println("Connecting to database...");
 		   conn = DriverManager.getConnection(DB_URL,USER,PASS);
 		   stmt = conn.createStatement();
-		   String sql = "CREATE TABLE augur_data " +
-                   "(movie_name VARCHAR(255)"+
+		   String sql = "CREATE TABLE augurdata" +
+                   "(movie_name VARCHAR(255),"+
 				   "twitter_score INTEGER, "+
                    "RT_audience_cmt INTEGER, "+
 				   "RT_critic_cmt INTEGER, "+
@@ -56,6 +42,8 @@ public class DBdemo  {
 				   "collection BIGINT,"+
                    "pred_collection BIGINT,"+
                    " PRIMARY KEY ( movie_name ))"; 
+		   stmt.executeUpdate(sql);
+		   System.out.println("Created table in given database.");
 	   }
 	   catch(SQLException se){
 		      //Handle errors for JDBC
@@ -84,7 +72,7 @@ public class DBdemo  {
 		   System.out.println("Goodbye!");
    }
    
-   public void  load_entry(movie_data movie)
+   public static void  load_entry(movie_data movie)
    {
 	   Connection conn = null;
 	   Statement stmt = null;
@@ -96,9 +84,9 @@ public class DBdemo  {
 		   System.out.println("Connecting to database...");
 		   conn = DriverManager.getConnection(DB_URL,USER,PASS);
 		   PreparedStatement preparedStatement = null;
-		   String sql = "INSERT INTO Registration " +
+		   String sql = "INSERT INTO augurdata " +
 				   		"(movie_name, twitter_score, RT_audience_cmt,  RT_critic_cmt,RT_audience_score,RT_critic_score,"
-				   		+ "YT_cmt_score,YT_views,YT_likes,YT_dislikes,collections) VALUES"
+				   		+ "YT_cmt_score,YT_views,YT_likes,YT_dislikes,collection) VALUES"
 				   		+ "(?,?,?,?,?,?,?,?,?,?,?)"; 
 		   preparedStatement = conn.prepareStatement(sql);
 		   preparedStatement.setString(1, movie.movie_name);
@@ -142,15 +130,17 @@ public class DBdemo  {
 		   System.out.println("Goodbye!");
    }
    
-   public void load_file2DB(String path)
+   public static void load_file2DB(String path)
    {
-	   movie_data temp = null;
+	   movie_data temp = new movie_data();
 	   try{
-	        String read=null;
+		    System.out.println("start inside load_file2DB");
+	        String line=null;
 	        FileReader fr = new FileReader(path);
 	        BufferedReader br = new BufferedReader(fr);
-	        while ((read = br.readLine()) != null) {
-	            String[] splited = read.split("\t");
+	        //&& (line.isEmpty() || line.trim().equals("") || line.trim().equals("\n"))
+	        while ((line = br.readLine()) != null ) {
+	            String[] splited = line.split("\t");
 	            temp.movie_name=splited[0];
 	            temp.twitter_score=Integer.parseInt(splited[1]);
 	            temp.RT_audience_cmt = Integer.parseInt(splited[2]);
@@ -163,6 +153,7 @@ public class DBdemo  {
 	            temp.YT_dislikes = Integer.parseInt(splited[9]); 
 	            temp.collections = Long.parseLong(splited[10]);
 	            load_entry(temp);
+	            System.out.println("inside load_file2DB");
 	        }
 	        br.close();
 
@@ -174,7 +165,39 @@ public class DBdemo  {
 	
    }
    
-   public static void main(String[] args) {
+   public static void read_folder(String path) throws Exception
+   {
+	   File folder = new File(path);
+	   File[] files = folder.listFiles();
+	   String file_path;
+	   if (files==null)
+		   {
+		   		System.out.println("null in directory");
+		   }
+	   else
+	   {
+		   for (int i = 0;i<files.length;i++)
+		   {
+			   file_path = files[i].getAbsolutePath();
+			   System.out.println(file_path);
+			   load_file2DB(file_path);
+			   
+		   }
+	   }
+   }
    
+   public  static void main(String[] args) throws Exception
+   {
+	   String option1 = args[0];
+	   
+	   if (option1.equals("create") )
+		   create_table();
+	   else if (option1.equals("load"))
+	   {
+		   System.out.println("load");
+		   read_folder(args[1]);
+		   System.out.println("load done "+ args[1]);
+	   }
+		   
 }//end main
 }//end FirstExample
