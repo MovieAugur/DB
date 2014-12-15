@@ -9,5 +9,4 @@ usage
 java <jar> create
 
 //to load data
-
 java <jar> load <folder containing input files>
