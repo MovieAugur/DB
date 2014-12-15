@@ -4,10 +4,10 @@ DB
 database connection, reads reduce files to create movie database.
 usage 
 
-to create database table
+//to create database table
 
-create
+java <jar> create
 
-to load data
+//to load data
 
-load <folder containing input files>
+java <jar> load <folder containing input files>
