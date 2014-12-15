@@ -9,4 +9,5 @@ to create database table
 create
 
 to load data
- load <folder containing input files>
+
+load <folder containing input files>
